@@ -3,9 +3,10 @@ OUTPUT_FORMAT("elf64-littleriscv")
 ENTRY(_start);
 
 SECTIONS {
-    /* Firmware is linked to 0x80000000. */
-    . = 0x80100000;
+    . = 0x80000000;
+    PROVIDE(__kernel_start_phys = .);
 
+    . = 0x80100000;
     .text : ALIGN(16) {
         *(.text.start)
         *(.text .text.*)
@@ -44,4 +45,9 @@ SECTIONS {
     .eh_frame : ALIGN(16) {
         *(.eh_frame)
     }
+
+    . = ALIGN(4k);
+    PROVIDE(__kernel_end_phys = .);
+
+    /DISCARD/ : { *(.eh_frame_hdr .eh_frame) }
 }

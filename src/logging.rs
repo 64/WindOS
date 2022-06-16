@@ -1,7 +1,7 @@
 use core::{fmt, fmt::Write};
 use log::{LevelFilter, Metadata, Record, Level};
 
-struct UartLogger;
+pub struct UartLogger;
 static LOGGER: UartLogger = UartLogger;
 
 impl UartLogger {

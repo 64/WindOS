@@ -1,11 +1,16 @@
 #![no_std]
 #![no_main]
+#![feature(int_roundings)]
+#![feature(extern_types)]
 
 mod asm;
+mod boot_allocator;
+mod consts;
 mod logging;
 mod panic;
+mod utils;
 
-use log::{info, LevelFilter, trace, debug, warn, error};
+use log::{debug, error, info, trace, warn, LevelFilter};
 
 #[no_mangle]
 extern "C" fn kernel_main(_hart_id: u64, dtb: *const u8) {
@@ -24,14 +29,9 @@ extern "C" fn kernel_main(_hart_id: u64, dtb: *const u8) {
 
             match k {
                 "loglevel" => {
-                    loglevel = match v {
-                        "trace" => LevelFilter::Trace,
-                        "debug" => LevelFilter::Debug,
-                        "info" => LevelFilter::Info,
-                        "warn" => LevelFilter::Warn,
-                        "error" => LevelFilter::Error,
-                        _ => continue,
-                    };
+                    loglevel = v
+                        .parse::<LevelFilter>()
+                        .expect("unexpected loglevel argument");
                 }
                 _ => continue,
             }
@@ -42,32 +42,46 @@ extern "C" fn kernel_main(_hart_id: u64, dtb: *const u8) {
 
     info!("Booting WindOS...");
 
-    debug!("This is a devicetree representation of a {}", fdt.root().model());
-    debug!("...which is compatible with at least: {}", fdt.root().compatible().first());
-    debug!("...and has {} CPU(s)", fdt.cpus().count());
-    debug!(
+    trace!(
+        "This is a devicetree representation of a {}",
+        fdt.root().model()
+    );
+    trace!(
+        "...which is compatible with at least: {}",
+        fdt.root().compatible().first()
+    );
+    trace!("...and has {} CPU(s)", fdt.cpus().count());
+    trace!(
         "...and has at least one memory location at: {:#X}",
         fdt.memory().regions().next().unwrap().starting_address as usize
     );
 
     let chosen = fdt.chosen();
     if let Some(bootargs) = chosen.bootargs() {
-        debug!("The bootargs are: {:?}", bootargs);
+        trace!("The bootargs are: {:?}", bootargs);
     }
 
     if let Some(stdout) = chosen.stdout() {
-        debug!("It would write stdout to: {}", stdout.name);
+        trace!("It would write stdout to: {}", stdout.name);
     }
 
     let soc = fdt.find_node("/soc");
-    debug!("Does it have a `/soc` node? {}", if soc.is_some() { "yes" } else { "no" });
+    trace!(
+        "Does it have a `/soc` node? {}",
+        if soc.is_some() { "yes" } else { "no" }
+    );
     if let Some(soc) = soc {
-        debug!("...and it has the following children:");
+        trace!("...and it has the following children:");
         for child in soc.children() {
-            debug!("    {}", child.name);
+            trace!("    {}", child.name);
         }
     }
 
+    let mut boot_allocator = boot_allocator::BootAllocator::from_fdt(&fdt);
+
+    trace!("alloc phys: {:?}", boot_allocator.alloc(0x1000));
+
+    info!("Shutting down WindOS...");
     sbi::system_reset::system_reset(
         sbi::system_reset::ResetType::Shutdown,
         sbi::system_reset::ResetReason::NoReason,
