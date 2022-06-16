@@ -1,12 +1,13 @@
-OUTPUT_ARCH(riscv64imac)
-
-ENTRY(_entry);
+OUTPUT_ARCH("riscv")
+OUTPUT_FORMAT("elf64-littleriscv")
+ENTRY(_start);
 
 SECTIONS {
-    . = 0x80000000;
+    /* Firmware is linked to 0x80000000. */
+    . = 0x80100000;
 
     .text : ALIGN(16) {
-        *(.text.entry)
+        *(.text.start)
         *(.text .text.*)
     }
 
@@ -38,5 +39,9 @@ SECTIONS {
 
     .rodata : ALIGN(16) {
         *(.rodata .rodata.*)
+    }
+
+    .eh_frame : ALIGN(16) {
+        *(.eh_frame)
     }
 }

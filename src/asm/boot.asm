@@ -1,24 +1,25 @@
-.section .text.entry
-.global _entry
-_entry:
-    # Only the bootstrap hart should continue.
-    csrr t0, mhartid
-    bnez t0, .wait_for_interrupts
-
-    csrw satp, zero
-
-    la gp, __global_pointer$
+.section .text.start
+.global _start
+_start:
+    # a0 contains hartid
+    # a1 contains dtb
 
     # Zero out the BSS sections.
-    la a0, __bss_start
-    la a1, __bss_end
-    bgeu a0, a1, .bss_zero_loop_end
-.bss_zero_loop:
-    sd zero, (a0)
-    addi a0, a0, 8
-    bltu a0, a1, .bss_zero_loop
-.bss_zero_loop_end:
+#     la t0, __bss_start
+#     la t1, __bss_end
+#     bgeu t0, t1, .bss_zero_loop_end
+# .bss_zero_loop:
+#     sd zero, (t0)
+#     addi t0, t0, 8
+#     bltu t0, t1, .bss_zero_loop
+# .bss_zero_loop_end:
 
-.wait_for_interrupts:
-    wfi
-    j .wait_for_interrupts
+    la sp, stack_top
+
+    # Jump to Rust.
+    jal kernel_main
+    unimp
+
+.section .bss
+    .skip 0x10000
+stack_top:

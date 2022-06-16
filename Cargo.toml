@@ -12,3 +12,8 @@ panic = "abort"
 panic = "abort"
 
 [dependencies]
+fdt = "0.1.3"
+log = "0.4.17"
+sbi = "0.2.0"
+
+[features]
