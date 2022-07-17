@@ -1,10 +1,8 @@
 use arrayvec::ArrayVec;
 use log::trace;
 
-use crate::consts::PAGE_SIZE;
-use crate::utils::RawSymbol;
-
 pub const NREGIONS: usize = 16;
+pub const PAGE_SIZE: usize = 0x1000;
 
 pub struct BootAllocator {
     regions: ArrayVec<Region, NREGIONS>,
@@ -17,8 +15,9 @@ struct Region {
 }
 
 extern "C" {
-    static __kernel_start_phys: RawSymbol;
-    static __kernel_end_phys: RawSymbol;
+    type Symbol;
+    static __prekernel_start_phys: Symbol;
+    static __prekernel_end_phys: Symbol;
 }
 
 impl BootAllocator {
@@ -27,8 +26,8 @@ impl BootAllocator {
             regions: ArrayVec::new(),
         };
 
-        let kernel_start = unsafe { __kernel_start_phys.as_usize() };
-        let kernel_end = unsafe { __kernel_end_phys.as_usize().next_multiple_of(PAGE_SIZE) };
+        let kernel_start = unsafe { &__prekernel_start_phys as *const Symbol as usize };
+        let kernel_end = unsafe { (&__prekernel_end_phys as *const Symbol as usize).next_multiple_of(PAGE_SIZE) };
 
         for rg in fdt.memory().regions() {
             let mut start = rg.starting_address as usize;
@@ -61,7 +60,7 @@ impl BootAllocator {
     }
 
     pub fn alloc(&mut self, requested_size: usize) -> *mut u8 {
-        let size = requested_size.next_multiple_of(crate::consts::PAGE_SIZE);
+        let size = requested_size.next_multiple_of(PAGE_SIZE);
         let rg = self
             .regions
             .iter_mut()

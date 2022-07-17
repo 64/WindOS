@@ -17,9 +17,9 @@ _start:
     la sp, stack_top
 
     # Jump to Rust.
-    jal kernel_main
+    jal prekernel_main
     unimp
 
 .section .bss
-    .skip 0x8000
+    .skip 16 * 0x1000
 stack_top:

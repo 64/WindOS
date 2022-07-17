@@ -1,0 +1,17 @@
+[package]
+name = "prekernel"
+version = "0.1.0"
+edition = "2021"
+
+# See more keys and their definitions at https://doc.rust-lang.org/cargo/reference/manifest.html
+
+[dependencies]
+kernel = { artifact = "bin", path = "../kernel" }
+arrayvec = { version = "0.7.2", default_features = false }
+fdt = "0.1.3"
+log = "0.4.17"
+riscv = "0.8.0"
+sbi = "0.2.0"
+xmas-elf = "0.8.0"
+
+[features]

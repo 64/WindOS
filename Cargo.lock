@@ -43,6 +43,16 @@ source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "b643857cf70949306b81d7e92cb9d47add673868edac9863c4a49c42feaf3f1e"
 
 [[package]]
+name = "kernel"
+version = "0.1.0"
+dependencies = [
+ "fdt",
+ "log",
+ "riscv",
+ "sbi",
+]
+
+[[package]]
 name = "log"
 version = "0.4.17"
 source = "registry+https://github.com/rust-lang/crates.io-index"
@@ -65,6 +75,19 @@ name = "nb"
 version = "1.0.0"
 source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "546c37ac5d9e56f55e73b677106873d9d9f5190605e41a856503623648488cae"
+
+[[package]]
+name = "prekernel"
+version = "0.1.0"
+dependencies = [
+ "arrayvec",
+ "fdt",
+ "kernel",
+ "log",
+ "riscv",
+ "sbi",
+ "xmas-elf",
+]
 
 [[package]]
 name = "riscv"
@@ -90,12 +113,16 @@ source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "6a02e4885ed3bc0f2de90ea6dd45ebcbb66dacffe03547fadbb0eeae2770887d"
 
 [[package]]
-name = "windos"
-version = "0.1.0"
+name = "xmas-elf"
+version = "0.8.0"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "8d29b4d8e7beaceb4e77447ba941a7600d23d0319ab52da0461abea214832d5a"
 dependencies = [
- "arrayvec",
- "fdt",
- "log",
- "riscv",
- "sbi",
+ "zero",
 ]
+
+[[package]]
+name = "zero"
+version = "0.1.2"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "5f1bc8a6b2005884962297587045002d8cfb8dcec9db332f4ca216ddc5de82c5"

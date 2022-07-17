@@ -6,7 +6,7 @@ runner = [
     "qemu-system-riscv64",
     "-machine", "virt",
     "-cpu", "rv64",
-    "-d", "guest_errors,unimp",
+    "-d", "int,guest_errors,unimp",
     "-smp", "1",
     "-m", "128M",
     "-serial", "mon:stdio",
@@ -20,7 +20,7 @@ runner = [
     # "-s", "-S",
     "-kernel"
 ]
-rustflags = ["-C", "link-arg=-Tsrc/linker/qemu-virt.lds"]
 
 [unstable]
-build-std = ["core", "compiler_builtins"]
+build-std = ["core", "compiler_builtins", "panic_abort"]
+bindeps = true

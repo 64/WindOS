@@ -1,27 +1,22 @@
 OUTPUT_ARCH("riscv")
 OUTPUT_FORMAT("elf64-littleriscv")
-ENTRY(_start);
+ENTRY(kernel_main);
 
 SECTIONS {
-    . = 0x80000000;
-    PROVIDE(__kernel_start_phys = .);
-
-    . = 0x80100000;
     .text : ALIGN(16) {
         *(.text.start)
         *(.text .text.*)
-    }
-
-    PROVIDE(__global_pointer$ = .);
-
-    .sdata : ALIGN(16) {
-        *(.sdata .sdata.*)
     }
 
     .srodata : ALIGN(16) {
         *(.srodata .srodata.*)
     }
 
+    .sdata : ALIGN(16) {
+        *(.sdata .sdata.*)
+    }
+
+    PROVIDE(__global_pointer$ = .);
     PROVIDE(__bss_start = .);
 
     .sbss : ALIGN(16) {
