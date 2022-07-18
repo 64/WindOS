@@ -3,16 +3,21 @@ OUTPUT_FORMAT("elf64-littleriscv")
 ENTRY(kernel_main);
 
 SECTIONS {
-    .text : ALIGN(16) {
+    . = 0xffffffff80000000;
+    .text : ALIGN(0x1000) {
         *(.text.start)
         *(.text .text.*)
+    }
+
+    .rodata : ALIGN(0x1000) {
+        *(.rodata .rodata.*)
     }
 
     .srodata : ALIGN(16) {
         *(.srodata .srodata.*)
     }
 
-    .sdata : ALIGN(16) {
+    .sdata : ALIGN(0x1000) {
         *(.sdata .sdata.*)
     }
 
@@ -33,11 +38,7 @@ SECTIONS {
         *(.data .data.*)
     }
 
-    .rodata : ALIGN(16) {
-        *(.rodata .rodata.*)
-    }
-
-    .eh_frame : ALIGN(16) {
+    .eh_frame : ALIGN(0x1000) {
         *(.eh_frame)
     }
 

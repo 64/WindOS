@@ -1,3 +1,5 @@
+use core::mem;
+
 use arrayvec::ArrayVec;
 use log::trace;
 
@@ -21,48 +23,52 @@ extern "C" {
 }
 
 impl BootAllocator {
-    pub fn from_fdt(fdt: &fdt::Fdt) -> Self {
+    pub fn from_fdt(fdt: &fdt::Fdt) -> &'static mut BootAllocator {
         let mut out = Self {
             regions: ArrayVec::new(),
         };
 
-        let kernel_start = unsafe { &__prekernel_start_phys as *const Symbol as usize };
-        let kernel_end = unsafe { (&__prekernel_end_phys as *const Symbol as usize).next_multiple_of(PAGE_SIZE) };
+        let prekernel_start = unsafe { &__prekernel_start_phys as *const Symbol as usize };
+        let prekernel_end = unsafe {
+            (&__prekernel_end_phys as *const Symbol as usize).next_multiple_of(PAGE_SIZE)
+        };
+
+        // The first region holds the pre-kernel data. We don't allocate from here
+        // until the main kernel starts.
+        out.regions.push(Region {
+            start: prekernel_start,
+            size: prekernel_end - prekernel_start,
+        });
 
         for rg in fdt.memory().regions() {
             let mut start = rg.starting_address as usize;
             let mut size = rg.size.unwrap();
 
-            if start <= kernel_start && kernel_start <= start + size {
-                let off = kernel_end.saturating_sub(start);
+            if start <= prekernel_start && prekernel_start <= start + size {
+                let off = prekernel_end.saturating_sub(start);
                 if off == 0 {
                     continue;
                 }
 
-                start = kernel_end;
+                start = prekernel_end;
                 size -= off;
             }
 
             out.regions.push(Region { start, size });
         }
 
-        trace!(target: "boot allocator", "dumping memory regions... kernel is at {:#x}..{:#x}", kernel_start, kernel_end);
-
-        for rg in &out.regions {
-            trace!(
-                "    region: {:#x}-{:#x} of size {:#x}",
-                rg.start, rg.start + rg.size,
-                rg.size
-            );
+        // Make an allocation to store ourselves in. This ensures that the memory for
+        // BootAllocator itself isn't reclaimed by the kernel.
+        let allocator = out.alloc(mem::size_of::<BootAllocator>()) as *mut BootAllocator;
+        unsafe {
+            allocator.write(out);
+            &mut *allocator
         }
-
-        out
     }
 
     pub fn alloc(&mut self, requested_size: usize) -> *mut u8 {
         let size = requested_size.next_multiple_of(PAGE_SIZE);
-        let rg = self
-            .regions
+        let rg = self.regions[1..]
             .iter_mut()
             .find(|rg| rg.size >= size)
             .expect("cannot satisfy allocation");
@@ -70,6 +76,11 @@ impl BootAllocator {
         let addr = rg.start;
         rg.size -= size;
         rg.start = rg.start + size;
-        addr as *mut u8
+
+        let ptr = addr as *mut u8;
+        unsafe {
+            ptr.write_bytes(0, requested_size);
+        }
+        ptr
     }
 }

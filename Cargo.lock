@@ -46,6 +46,7 @@ checksum = "b643857cf70949306b81d7e92cb9d47add673868edac9863c4a49c42feaf3f1e"
 name = "kernel"
 version = "0.1.0"
 dependencies = [
+ "arrayvec",
  "fdt",
  "log",
  "riscv",

@@ -4,6 +4,7 @@ version = "0.1.0"
 edition = "2021"
 
 [dependencies]
+arrayvec = { version = "0.7.2", default_features = false }
 fdt = "0.1.3"
 log = "0.4.17"
 riscv = "0.8.0"

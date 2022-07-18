@@ -1,12 +1,13 @@
 use core::{fmt, fmt::Write};
-use log::{LevelFilter, Metadata, Record, Level};
+use log::{Level, LevelFilter, Metadata, Record};
+
+use crate::addr::phys_to_virt_mut;
 
 pub struct UartLogger;
-static LOGGER: UartLogger = UartLogger;
 
 impl UartLogger {
     fn write(&mut self, c: u8) {
-        unsafe { (0x1000_0000 as *mut u8).write_volatile(c) };
+        unsafe { phys_to_virt_mut::<u8>(0x1000_0000).write_volatile(c) };
     }
 }
 
@@ -26,7 +27,6 @@ impl fmt::Write for UartLogger {
 
 impl log::Log for UartLogger {
     fn enabled(&self, _metadata: &Metadata) -> bool {
-        // metadata.level() <= Level::Info
         true
     }
 
@@ -40,13 +40,23 @@ impl log::Log for UartLogger {
                 Level::Error => ("\x1b[31m", ""),
             };
             let line_suffix = "\x1b[0m";
-            writeln!(UartLogger, "[{}{:5}{}] {}{}", color_prefix, record.level(), color_suffix, record.args(), line_suffix).unwrap();
+            writeln!(
+                UartLogger,
+                "[{}{:5}{}] {}{}",
+                color_prefix,
+                record.level(),
+                color_suffix,
+                record.args(),
+                line_suffix
+            )
+            .unwrap();
         }
     }
 
     fn flush(&self) {}
 }
 
+static LOGGER: UartLogger = UartLogger;
 pub fn init(level: LevelFilter) {
     log::set_logger(&LOGGER)
         .map(|()| log::set_max_level(level))

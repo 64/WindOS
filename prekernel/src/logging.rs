@@ -1,5 +1,5 @@
 use core::{fmt, fmt::Write};
-use log::{LevelFilter, Metadata, Record, Level};
+use log::{Level, LevelFilter, Metadata, Record};
 
 pub struct UartLogger;
 static LOGGER: UartLogger = UartLogger;
@@ -39,7 +39,16 @@ impl log::Log for UartLogger {
                 Level::Error => ("\x1b[31m", ""),
             };
             let line_suffix = "\x1b[0m";
-            writeln!(UartLogger, "[{}{:5}{}] {}{}", color_prefix, record.level(), color_suffix, record.args(), line_suffix).unwrap();
+            writeln!(
+                UartLogger,
+                "[{}{:5}{}] {}{}",
+                color_prefix,
+                record.level(),
+                color_suffix,
+                record.args(),
+                line_suffix
+            )
+            .unwrap();
         }
     }
 
