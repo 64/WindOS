@@ -23,13 +23,12 @@ extern "C" fn kernel_main(_hart_id: u64, dtb: *const u8, alloc: &'static mut Boo
     }
 
     parse_fdt(dtb);
-
     info!("Starting WindOS kernel...");
 
     alloc.dump_regions();
 
     unsafe {
-        core::ptr::read_volatile(2 as *const u8);
+        core::ptr::read_volatile(3 as *const u8);
     }
 
     info!("Shutting down WindOS...");

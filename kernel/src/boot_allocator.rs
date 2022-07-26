@@ -1,5 +1,3 @@
-use core::mem;
-
 use arrayvec::ArrayVec;
 use log::trace;
 

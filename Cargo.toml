@@ -9,13 +9,13 @@ members = [
 [profile.dev]
 panic = "abort"
 [profile.dev.package.prekernel]
-rustflags = ["-C", "link-arg=-Tlinker-script/prekernel-qemu-virt.lds"]
+rustflags = ["-C", "link-arg=-Tprekernel/linker-script/qemu-virt.lds"]
 [profile.dev.package.kernel]
-rustflags = ["-C", "link-arg=-Tlinker-script/kernel-qemu-virt.lds"]
+rustflags = ["-C", "link-arg=-Tkernel/linker-script/qemu-virt.lds"]
 
 [profile.release]
 panic = "abort"
 [profile.release.package.prekernel]
-rustflags = ["-C", "link-arg=-Tlinker-script/prekernel-qemu-virt.lds"]
+rustflags = ["-C", "link-arg=-Tprekernel/linker-script/qemu-virt.lds"]
 [profile.release.package.kernel]
-rustflags = ["-C", "link-arg=-Tlinker-script/kernel-qemu-virt.lds"]
+rustflags = ["-C", "link-arg=-Tkernel/linker-script/qemu-virt.lds"]
